@@ -14,6 +14,7 @@
 #' @param traj Matrix of indicators for the trajectory groups.
 #' @param number_traj An integer to choose the number of trajectory groups.
 #' @param treshold For weight truncation.
+#' @param class_var name of the trajectory group variable.
 #' @param obsdata Observed data in wide format.
 #' @returns  \item{list_pltmle_countermeans}{ Counterfactual means and influence functions with the pooled ltmle.}
 #' \item{D}{Influence functions}
@@ -49,19 +50,20 @@
 #' res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
 #' covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
 #'  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
-#' traj=traj, treshold = 0.99)
+#' traj=traj, treshold = 0.99, class_var = "traj_group")
 #' res_pltmle$counter_means
 #' }
 #' @author Awa Diop, Denis Talbot
 
 
 pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_interval, number_traj,
-                   time, time_values, identifier, obsdata, traj, total_followup, treshold = treshold) {
+                   time, time_values, identifier, obsdata, traj, total_followup, treshold = treshold, class_var) {
   # Initialize variables
   D = NULL #Influence curve
   D_list = list() #To store all influence curves
   obsdata0.all = list()
   obsdata.all = list()
+  traj.all = list()
   nregimes = 2^ntimes_interval  # Number of treatment regimes
 
   # Generate treatment regimes
@@ -82,9 +84,12 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
     obsdata.all[[length(obsdata.all) + 1]] = obsdata
   }
 
+
   obsdata.all2 = do.call(rbind, obsdata.all)
   obsdata0.all2 = do.call(rbind, obsdata0.all)
-
+  traj.all = sapply(1:number_traj,function(i)ifelse(obsdata.all2[, class_var]==i,1,0))
+  colnames(traj.all) <- paste0("traj", 1:ncol(traj.all))
+  obsdata.all2 <- cbind(obsdata.all2, traj.all)
   # Fit the model
   modQs = glm(formula, family = binomial(), data = obsdata)
 
@@ -97,26 +102,42 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
                                           numerator = "unstabilized",
                                           include_censor = FALSE, obsdata = obsdata)[[1]];
 
-  weights_trunc <- sapply(1:ntimes_interval, function(x){
-  weights <- ifelse(quantile(Weights[, x], treshold, na.rm = TRUE)> Weights[, x], quantile(Weights[, x], treshold, na.rm = TRUE), Weights[, x])
-  return(weights)
-  })
-  # Compute Hs for each regime
+  weights_trunc <- Weights
+
+
   Hs.all = lapply(1:nregimes, function(x) {
     regime = list.regimes[[x]]
-    Hs = as.matrix(rowSums(sapply(1:ntimes_interval, function(i) obsdata[, treatment[i]] == regime[i])) == ntimes_interval) *  weights_trunc[, ntimes_interval]
+    Hs = as.matrix(rowSums(sapply(1:ntimes_interval, function(i)
+    obsdata[, treatment[i]] == regime[i])) == ntimes_interval) * weights_trunc[, ntimes_interval]
     return(Hs %*% t(traj[x, 1:number_traj]))
   })
 
   Hs = do.call(rbind, Hs.all)
 
+  Hs_trunc <- Hs
+
+  for (j in 1:ncol(Hs)) {
+    # Compute the 99th percentile (or other quantile) for the current column
+    quantile_value <- na.omit(quantile(Hs[, j], treshold, na.rm = TRUE))
+
+    # treshold values greater than the 99th percentile
+    Hs_trunc[, j] <- ifelse(Hs[, j] > quantile_value, quantile_value, Hs[, j])
+  }
+
   # Update the risk for each regime of treatment
-  modEs = glm(as.formula(paste0(outcome, "~", "-1 + offset(qlogis(unlist(Qs))) + Hs")), family = binomial, data = obsdata.all2)
+  coef_Es <-c()
+  modEs <- glm(as.formula(paste0(outcome,
+               paste0("~", paste0("traj", 2:number_traj, collapse = "+")))),
+               offset = qlogis(unlist(Qs)),
+               weights = Hs_trunc[,number_traj],
+               family = quasibinomial,
+               data = obsdata.all2)
 
-  coef_Es = ifelse(is.na(coef(modEs)), 0, coef(modEs))
+  coef_Es <- coef(modEs)
 
+  coef_Es = ifelse(is.na(coef_Es), 0, coef_Es)
   Qstar = lapply(1:nregimes,function(x)plogis(qlogis(Qs[[x]]) +
-                                                as.numeric(t(t(as.matrix( coef_Es))%*%t(Hs.all[[x]])))));
+                                                as.numeric(t(t(as.matrix(coef_Es))%*%t(Hs.all[[x]])))));
 
   # Influence curve for each treatment regime
   Ds = lapply(1:nregimes,function(x)sapply(1:number_traj,function(y)
@@ -141,18 +162,38 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
     # Update Hs for each regime
     Hs.all = lapply(1:nregimes, function(x) {
       regime = list.regimes[[x]]
-      Hs = as.matrix(rowSums(sapply(1:i, function(i) obsdata[, treatment[i]] == regime[i])) == i) * weights_trunc[, i]
+      Hs = as.matrix(rowSums(sapply(1:i, function(i)
+        obsdata[, treatment[i]] == regime[i])) == i) * weights_trunc[, i]
       return(Hs %*% t(traj[x, 1:number_traj]))
     })
 
     Hs = do.call(rbind, Hs.all)
 
-    modEs = glm(unlist(Qstar) ~ -1 + offset(qlogis(unlist(Qs))) + Hs, family = binomial(), data = obsdata.all2)
-    coef_Es = ifelse(is.na(coef(modEs)), 0, coef(modEs))
+    Hs_trunc <- Hs
+
+    for (j in 1:ncol(Hs)) {
+      # Compute the 99th percentile (or other quantile) for the current column
+      quantile_value <- na.omit(quantile(Hs[, j], treshold, na.rm = TRUE))
+
+      # treshold values greater than the 99th percentile
+      Hs_trunc[, j] <- ifelse(Hs[, j] > quantile_value, quantile_value, Hs[, j])
+    }
+
+      coef_Es <-c()
+      modEs <- glm(as.formula(paste0("unlist(Qstar) ~ ", paste0("traj", 2:number_traj, collapse = " + "))),
+                   weights = Hs_trunc[,number_traj],
+                   offset = qlogis(unlist(Qs)),
+                   family = quasibinomial(),
+                   data = obsdata.all2)
+
+      coef_Es <- coef(modEs)
+      coef_Es = ifelse(is.na(coef_Es), 0, coef_Es)
+
     Qstarm1 = lapply(1:nregimes,function(x)plogis(qlogis(Qs[[x]]) +
-                                                  as.numeric(t(t(as.matrix( coef_Es))%*%t(Hs.all[[x]])))));
+                                                  as.numeric(t(t(as.matrix(coef_Es))%*%t(Hs.all[[x]])))));
     Ds = lapply(1:nregimes,function(x) sapply(1:number_traj,function(y)
       as.matrix(Hs.all[[x]][,y]*(Qstar[[x]]-Qstarm1[[x]]))))
+
     D_list[i]<-list(Ds)
     Qstar = Qstarm1;
   }
@@ -171,6 +212,7 @@ pltmle <- function(formula, outcome, treatment, covariates, baseline, ntimes_int
     comps = as.matrix(D_list[[y]][[x]] +  as.numeric(Qstar[[x]] - mean(Qstar[[x]])))
     return(comps)
   }))))
+
   list_pltmle_countermeans = list(counter_means = obsdataT2$Y, D = D)
   return(list_pltmle_countermeans)
 }

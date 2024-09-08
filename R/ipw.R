@@ -47,6 +47,5 @@ inverse_probability_weighting <- function(numerator = c("stabilized", "unstabili
                                                              baseline = baseline,  obsdata = obsdata))
   )
 
-  class(ipw_result) <- "IPW"
   return(ipw_result)
 }

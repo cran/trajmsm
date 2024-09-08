@@ -30,8 +30,8 @@
 #' @author Awa Diop Denis Talbot
 #' @examples
 #' \donttest{
-#' obsdata_long = gendata(n = 1000, format = "long",
-#' total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+#' obsdata_long = gendata(n = 5000, format = "long",
+#' total_followup = 8, timedep_outcome = TRUE,  seed = 845)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -43,7 +43,7 @@
 #' covariates = covariates, baseline = baseline_var,
 #' outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6,
 #' total_followup = 8, time = "time",time_values = years, identifier = "id",
-#' number_traj = 3, family = "poisson", obsdata = obsdata_long)
+#' number_traj = 3, family = "poisson", obsdata = obsdata_long,treshold = 1)
 #' respltmle$results_hrmsm_pltmle
 #' }
 
@@ -113,7 +113,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
     for(i in 1:nb_sub){
       #Create the data under all the different regime of treatment
-      df = list_obsdata[[i]];
+      df = subset(dat_final, dat_final$Interv == i);
       df_l = reshape(df, direction = "wide", idvar = identifier, v.names = var_cov, timevar = time, sep ="")
 
       outcome_up <- outcome[outcome %in% colnames(df_l)]
@@ -129,7 +129,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
       res_pltmle = pltmle(formula = form, outcome = outcome_up,treatment = treatment_up,
                           covariates = cov_up, baseline = baseline, ntimes_interval = ntimes_interval, number_traj = number_traj,
-                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold);
+                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold, class_var = "ptmle_group");
 
       obsdata_pool= data.frame(Y=res_pltmle$counter_means);
       D=res_pltmle$D; #Influence functions

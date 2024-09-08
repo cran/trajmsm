@@ -56,7 +56,7 @@ Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 Estimate parameters of LCGA-MSM using IPW.
 }
 \examples{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 years <- 2011:2016
 baseline_var <- c("age","sex")
 variables <- c("hyper", "bmi")

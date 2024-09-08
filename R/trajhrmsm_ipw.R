@@ -29,8 +29,8 @@
 #' @export trajhrmsm_ipw
 #' @examples
 #' \donttest{
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
-#' timedep_outcome = TRUE,  seed = 945)
+#' obsdata_long = gendata(n = 5000, format = "long", total_followup = 8,
+#' timedep_outcome = TRUE,  seed = 845)
 #' baseline_var <- c("age","sex")
 #' years <- 2011:2018
 #' variables <- c("hyper", "bmi")
@@ -122,7 +122,7 @@ trajhrmsm_ipw <- function(degree_traj = c("linear","quadratic","cubic"),
     mod_glm = glm(formula =as.formula(paste(outcome, "~ factor(ipw_group) + factor(Interv)")), weights = dat_final[,"IPW"],family = family,data=dat_final);
     coefs <- summary(mod_glm)$coefficients[1:number_traj,1];
     se   <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)))[1:number_traj];
-    pvalue <- round(coef(summary(mod_glm))[1:number_traj,4],4)
+    pvalue <- 2*pnorm(-abs(coefs)/se)
     IClo = coefs- 1.96*se ;
     ICup = coefs + 1.96*se;
 

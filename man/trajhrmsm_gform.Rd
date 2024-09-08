@@ -68,8 +68,8 @@ Estimate parameters of LCGA-HRMSM using g-formula.
 }
 \examples{
 \donttest{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
-timedep_outcome = TRUE,  seed = 945)
+obsdata_long = gendata(n = 5000, format = "long", total_followup = 8,
+timedep_outcome = TRUE,  seed = 845)
 baseline_var <- c("age","sex")
 years <- 2011:2018
 variables <- c("hyper", "bmi")
@@ -77,7 +77,7 @@ covariates <- lapply(years, function(year) {
 paste0(variables, year)})
 treatment_var <- paste0("statins", 2011:2018)
 var_cov <- c("statins","hyper", "bmi")
-reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=5 ,
+reshrmsm_gform = trajhrmsm_gform(degree_traj = "linear", rep=50 ,
 treatment = treatment_var,covariates = covariates, baseline = baseline_var,
 outcome = "y",var_cov = var_cov, ntimes_interval = 6, total_followup = 8,
  time = "time",time_values = years, identifier = "id",

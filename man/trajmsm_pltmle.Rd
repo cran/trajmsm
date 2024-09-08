@@ -17,8 +17,9 @@ trajmsm_pltmle(
   time_values,
   trajmodel,
   ref,
-  obsdata,
-  treshold = 0.999
+  treshold = 0.99,
+  class_var,
+  obsdata
 )
 }
 \arguments{
@@ -46,9 +47,11 @@ trajmsm_pltmle(
 
 \item{ref}{The reference group.}
 
-\item{obsdata}{Observed data in wide format.}
-
 \item{treshold}{For weight truncation.}
+
+\item{class_var}{name of the trajectory group variable.}
+
+\item{obsdata}{Observed data in wide format.}
 }
 \value{
 Provides a matrix of estimates for LCGA-MSM, obtained using the pooled ltlmle method.
@@ -61,7 +64,7 @@ Estimate parameters of LCGA-MSM using pooled LTMLE
 }
 \examples{
 \donttest{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 years <- 2011:2016
 baseline_var <- c("age","sex")
 variables <- c("hyper", "bmi")
@@ -75,16 +78,18 @@ datapost = restraj$data_post
 trajmsm_long <- merge(obsdata_long, datapost, by = "id")
     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
-    AggTrajData
 trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
                 paste0(unlist(covariates), collapse = "+"),"+",
                 paste0(baseline_var, collapse = "+"))
-resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
- covariates = covariates, treatment = treatment_var, outcome = "y",
- time = "time", time_values = years, number_traj = 3, total_followup = 6,
- trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide, treshold = 0.99)
+resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id",
+ baseline = baseline_var,
+ covariates = covariates, treatment = treatment_var,
+ outcome = "y", time = "time", time_values = years,
+ number_traj = 3, total_followup = 6,
+ trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide,
+ class_var = "class", treshold = 1)
  resmsm_pltmle
  }
 }

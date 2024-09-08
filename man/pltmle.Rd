@@ -18,7 +18,8 @@ pltmle(
   obsdata,
   traj,
   total_followup,
-  treshold = treshold
+  treshold = treshold,
+  class_var
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ pltmle(
 \item{total_followup}{Number of measuring times per interval.}
 
 \item{treshold}{For weight truncation.}
+
+\item{class_var}{name of the trajectory group variable.}
 }
 \value{
 \item{list_pltmle_countermeans}{ Counterfactual means and influence functions with the pooled ltmle.}
@@ -87,7 +90,7 @@ traj[,1]=1
 res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
 covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
-traj=traj, treshold = 0.99)
+traj=traj, treshold = 0.99, class_var = "traj_group")
 res_pltmle$counter_means
 }
 }

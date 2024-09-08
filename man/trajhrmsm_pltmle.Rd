@@ -66,8 +66,8 @@ Estimate parameters of LCGA-HRMSM using a Pooled LTMLE.
 }
 \examples{
 \donttest{
-obsdata_long = gendata(n = 1000, format = "long",
-total_followup = 8, timedep_outcome = TRUE,  seed = 945)
+obsdata_long = gendata(n = 5000, format = "long",
+total_followup = 8, timedep_outcome = TRUE,  seed = 845)
 baseline_var <- c("age","sex")
 years <- 2011:2018
 variables <- c("hyper", "bmi")
@@ -79,7 +79,7 @@ respltmle = trajhrmsm_pltmle(degree_traj = "linear", treatment = treatment_var,
 covariates = covariates, baseline = baseline_var,
 outcome = paste0("y", 2016:2018),var_cov = var_cov, ntimes_interval = 6,
 total_followup = 8, time = "time",time_values = years, identifier = "id",
-number_traj = 3, family = "poisson", obsdata = obsdata_long)
+number_traj = 3, family = "poisson", obsdata = obsdata_long,treshold = 1)
 respltmle$results_hrmsm_pltmle
 }
 }

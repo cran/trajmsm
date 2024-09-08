@@ -14,6 +14,7 @@
 #' @param number_traj An integer to choose the number of trajectory groups.
 #' @param trajmodel Trajectory model built with the observed treatment.
 #' @param treshold For weight truncation.
+#' @param class_var name of the trajectory group variable.
 #' @param obsdata Observed data in wide format.
 #' @param ref The reference group.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
@@ -24,7 +25,7 @@
 #' @export trajmsm_pltmle
 #' @examples
 #' \donttest{
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
 #' variables <- c("hyper", "bmi")
@@ -38,16 +39,18 @@
 #' trajmsm_long <- merge(obsdata_long, datapost, by = "id")
 #'     AggFormula <- as.formula(paste("statins", "~", "time", "+", "class"))
 #'     AggTrajData <- aggregate(AggFormula, data = trajmsm_long, FUN = mean)
-#'     AggTrajData
 #' trajmsm_wide = reshape(data = trajmsm_long, direction = "wide", idvar = "id",
 #' v.names = c("statins","bmi","hyper"), timevar = "time", sep ="")
 #'formula = paste0("y ~", paste0(treatment_var,collapse = "+"), "+",
 #'                 paste0(unlist(covariates), collapse = "+"),"+",
 #'                 paste0(baseline_var, collapse = "+"))
-#' resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id", baseline = baseline_var,
-#'  covariates = covariates, treatment = treatment_var, outcome = "y",
-#'  time = "time", time_values = years, number_traj = 3, total_followup = 6,
-#'  trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide, treshold = 0.99)
+#' resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id",
+#'  baseline = baseline_var,
+#'  covariates = covariates, treatment = treatment_var,
+#'  outcome = "y", time = "time", time_values = years,
+#'  number_traj = 3, total_followup = 6,
+#'  trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide,
+#'  class_var = "class", treshold = 1)
 #'  resmsm_pltmle
 #'  }
 #' @return \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
@@ -55,7 +58,8 @@
 
 
 trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,treatment,outcome,
-                                 number_traj,total_followup, time, time_values , trajmodel,ref,obsdata,treshold=0.999){
+                                 number_traj,total_followup, time, time_values , trajmodel,ref,
+                                treshold = 0.99,class_var, obsdata){
 
  stopifnot(!is.null(identifier));
  stopifnot(!is.null(baseline));
@@ -66,7 +70,6 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
  stopifnot(!is.null(obsdata));
  stopifnot(!is.null(trajmodel));
  stopifnot(!is.null(time));
-  stopifnot(!is.null(treshold));
      nregimes = 2^total_followup;  #number of treatment regimes
 
      treatment_names <- sub("\\d+", "", treatment)
@@ -84,7 +87,7 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
     #Create the obsdata under all the different regime of treatment
      res_pltmle = pltmle(formula = formula, outcome = outcome,treatment = treatment,
                  covariates = covariates, baseline = baseline, ntimes_interval = total_followup, number_traj = number_traj,
-                 time =  time, identifier = identifier,obsdata = obsdata,traj=traj_indic, treshold = treshold);
+                 time =  time, identifier = identifier,obsdata = obsdata,traj=traj_indic, treshold = treshold, class_var = class_var);
 
     obsdata_pool= data.frame(Y=res_pltmle$counter_means);
     D=res_pltmle$D; #Influence functions
@@ -99,6 +102,7 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
 
     CQ=lapply(1:nregimes,function(i)(as.matrix(X[i,]))%*%as.matrix((plogis(as.matrix(t(X[i,]))%*%B))/(1+exp(as.matrix(t(X[i,]))%*%B))^2)%*%t(as.matrix(((X[i,])))));
     CQ=Reduce('+',CQ)
+
 
     Db = matrix(0, nrow = nrow(D[[1]]), ncol = number_traj);
     for(l in 1:nregimes){

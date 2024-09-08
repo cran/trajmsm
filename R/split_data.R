@@ -28,7 +28,7 @@ all_df<- lapply(1:tot_int, function(j){
   all_sub <- obsdata[obsdata[, time] %in% df_times[,j],]
   all_sub$Interv <- j
   all_sub$time2 <- ave(all_sub[,identifier],all_sub[,identifier],FUN = function(x) seq.int(x))
-  all_sub$identifier2 <- as.integer(as.character(paste0(all_sub[,identifier], j)))
+  all_sub$identifier2 <- paste0(all_sub[,identifier],"_", j)
   return(all_sub)})
 
 return(all_df)

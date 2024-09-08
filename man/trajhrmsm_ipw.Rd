@@ -73,8 +73,8 @@ Estimate parameters of LCGA-HRMSM using IPW.
 }
 \examples{
 \donttest{
-obsdata_long = gendata(n = 1000, format = "long", total_followup = 8,
-timedep_outcome = TRUE,  seed = 945)
+obsdata_long = gendata(n = 5000, format = "long", total_followup = 8,
+timedep_outcome = TRUE,  seed = 845)
 baseline_var <- c("age","sex")
 years <- 2011:2018
 variables <- c("hyper", "bmi")

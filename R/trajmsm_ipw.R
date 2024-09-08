@@ -16,14 +16,13 @@
 #' @param treshold For weight truncation.
 #' @return Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 #' @export trajmsm_ipw
-#' @import sandwich
 #' @importFrom survival coxph
-#' @import flexmix geepack
+#' @import flexmix sandwich
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @return Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 #' @examples
-#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 945)
+#' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
 #' variables <- c("hyper", "bmi")
@@ -51,19 +50,19 @@
 #'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 #'resmsm_ipw
 
-
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,
                         baseline, obsdata,
-                        numerator = "stabilized",include_censor = FALSE, censor, weights = NULL, treshold = 0.99) {
+                        numerator = "stabilized", include_censor = FALSE,
+                        censor, weights = NULL, treshold = 0.99) {
 
   # Compute weights if not provided
   if (is.null(weights)) {
     weights <- inverse_probability_weighting(identifier = as.character(identifier), covariates = covariates,
                                              treatment = treatment, baseline = baseline,
                                              numerator = numerator,
-                                             include_censor = include_censor, censor = censor,obsdata = obsdata)[[1]][, length(treatment)]
+                                             include_censor = include_censor, censor = censor, obsdata = obsdata)[[1]][, length(treatment)]
 
-    obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE)> weights, quantile(weights, treshold, na.rm = TRUE), weights)
+    obsdata$weights <- ifelse(quantile(weights, treshold, na.rm = TRUE) > weights, quantile(weights, treshold, na.rm = TRUE), weights)
   } else {
     obsdata$weights <- weights
   }
@@ -81,23 +80,23 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
     # Use do.call to invoke coxph with dynamically constructed arguments
     mod_glm <- do.call("coxph", args_list)
   } else {
-    # Prepare the list of arguments for geeglm
-    args_list <- list(
-      formula = formula1,
-      data = obsdata,
-      weights = weights,
-      id = obsdata[[identifier]], # Access the ID column directly from the data frame
-      family = family
-    )
+    # Fit a standard glm model
+    mod_glm <- glm(formula = formula1, data = obsdata, weights = obsdata$weights, family = family)
 
-    # Use do.call to invoke geeglm with dynamically constructed arguments
-    mod_glm <- do.call("geeglm", args_list)
+    # Compute robust standard errors using the sandwich package
+    cluster_formula <- as.formula(paste0("~", identifier))
+    robust_se <- sqrt(diag(vcovCL(mod_glm, cluster = cluster_formula)));
   }
 
   # Extracting model results
-  coefs <- coef(summary(mod_glm))[, 1]
-  se <- coef(summary(mod_glm))[, 2]
-  pvalue <- 2*pnorm(-abs(coefs)/se)
+  coefs <- coef(mod_glm)
+  if (family == "survival") {
+    # Extract standard errors for survival models
+    se <- coef(summary(mod_glm))[, 2]
+  } else {
+    se <- robust_se  # Use robust standard errors for non-survival models
+  }
+  pvalue <- 2 * pnorm(-abs(coefs) / se)
   ic_lo <- coefs - 1.96 * se
   ic_up <- coefs + 1.96 * se
 
@@ -106,3 +105,4 @@ trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covar
 
   return(restrajmsm_ipw)
 }
+
