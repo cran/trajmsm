@@ -22,6 +22,7 @@
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' @return Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 #' @examples
+#' \donttest{
 #' obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 #' years <- 2011:2016
 #' baseline_var <- c("age","sex")
@@ -49,6 +50,7 @@
 #'            treatment = treatment_var, family = "binomial",
 #'            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 #'resmsm_ipw
+#'}
 
 trajmsm_ipw <- function(formula1, formula2, family, identifier, treatment, covariates,
                         baseline, obsdata,

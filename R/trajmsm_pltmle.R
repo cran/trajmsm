@@ -14,9 +14,9 @@
 #' @param number_traj An integer to choose the number of trajectory groups.
 #' @param trajmodel Trajectory model built with the observed treatment.
 #' @param treshold For weight truncation.
-#' @param class_var name of the trajectory group variable.
 #' @param obsdata Observed data in wide format.
 #' @param ref The reference group.
+#' @param class_var Name of the trajectory group variable.
 #' @importFrom stats na.omit rbinom plogis qlogis  reshape glm
 #' binomial coef as.formula ave aggregate relevel pnorm sd quantile model.matrix
 #' quasibinomial var
@@ -50,7 +50,7 @@
 #'  outcome = "y", time = "time", time_values = years,
 #'  number_traj = 3, total_followup = 6,
 #'  trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide,
-#'  class_var = "class", treshold = 1)
+#'   treshold = 1,class_var = "class")
 #'  resmsm_pltmle
 #'  }
 #' @return \item{results_msm_pooledltmle}{Estimates of a LCGA-MSM with pooled LTMLE.}
@@ -59,7 +59,7 @@
 
 trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,treatment,outcome,
                                  number_traj,total_followup, time, time_values , trajmodel,ref,
-                                treshold = 0.99,class_var, obsdata){
+                                treshold = 0.99, obsdata, class_var){
 
  stopifnot(!is.null(identifier));
  stopifnot(!is.null(baseline));
@@ -87,7 +87,8 @@ trajmsm_pltmle <- function(formula = formula,identifier,baseline,covariates,trea
     #Create the obsdata under all the different regime of treatment
      res_pltmle = pltmle(formula = formula, outcome = outcome,treatment = treatment,
                  covariates = covariates, baseline = baseline, ntimes_interval = total_followup, number_traj = number_traj,
-                 time =  time, identifier = identifier,obsdata = obsdata,traj=traj_indic, treshold = treshold, class_var = class_var);
+                 time =  time, identifier = identifier,obsdata = obsdata,
+                 traj=traj_indic, treshold = treshold, class_pred = class, class_var = class_var);
 
     obsdata_pool= data.frame(Y=res_pltmle$counter_means);
     D=res_pltmle$D; #Influence functions

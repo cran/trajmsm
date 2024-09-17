@@ -19,7 +19,8 @@ pltmle(
   traj,
   total_followup,
   treshold = treshold,
-  class_var
+  class_var,
+  class_pred
 )
 }
 \arguments{
@@ -51,7 +52,9 @@ pltmle(
 
 \item{treshold}{For weight truncation.}
 
-\item{class_var}{name of the trajectory group variable.}
+\item{class_var}{Name of the trajectory group variable.}
+
+\item{class_pred}{Vector of predicted trajectory groups.}
 }
 \value{
 \item{list_pltmle_countermeans}{ Counterfactual means and influence functions with the pooled ltmle.}
@@ -90,7 +93,7 @@ traj[,1]=1
 res_pltmle = pltmle(formula = formula, outcome = "y",treatment = treatment_var,
 covariates = covariates, baseline = baseline_var, ntimes_interval = 3, number_traj = 3,
  time =  "time",time_values = time_values,identifier = "id",obsdata = obsdata,
-traj=traj, treshold = 0.99, class_var = "traj_group")
+traj=traj, treshold = 0.99, class_pred= class, class_var = "class")
 res_pltmle$counter_means
 }
 }

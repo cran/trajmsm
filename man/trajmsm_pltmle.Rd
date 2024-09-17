@@ -18,8 +18,8 @@ trajmsm_pltmle(
   trajmodel,
   ref,
   treshold = 0.99,
-  class_var,
-  obsdata
+  obsdata,
+  class_var
 )
 }
 \arguments{
@@ -49,9 +49,9 @@ trajmsm_pltmle(
 
 \item{treshold}{For weight truncation.}
 
-\item{class_var}{name of the trajectory group variable.}
-
 \item{obsdata}{Observed data in wide format.}
+
+\item{class_var}{Name of the trajectory group variable.}
 }
 \value{
 Provides a matrix of estimates for LCGA-MSM, obtained using the pooled ltlmle method.
@@ -89,7 +89,7 @@ resmsm_pltmle <- trajmsm_pltmle(formula = formula, identifier = "id",
  outcome = "y", time = "time", time_values = years,
  number_traj = 3, total_followup = 6,
  trajmodel = restraj$traj_model, ref = "1", obsdata = trajmsm_wide,
- class_var = "class", treshold = 1)
+  treshold = 1,class_var = "class")
  resmsm_pltmle
  }
 }

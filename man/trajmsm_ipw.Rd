@@ -56,6 +56,7 @@ Provides a matrix of estimates for LCGA-MSM, obtained using IPW.
 Estimate parameters of LCGA-MSM using IPW.
 }
 \examples{
+\donttest{
 obsdata_long = gendata(n = 1000, format = "long", total_followup = 6, seed = 845)
 years <- 2011:2016
 baseline_var <- c("age","sex")
@@ -83,4 +84,5 @@ resmsm_ipw = trajmsm_ipw(formula1 = as.formula("y ~ ipw_group"),
            treatment = treatment_var, family = "binomial",
            obsdata = obsdata,numerator = "stabilized", include_censor = FALSE, treshold = 0.99)
 resmsm_ipw
+}
 }

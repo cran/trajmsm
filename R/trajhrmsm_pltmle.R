@@ -86,9 +86,9 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
                          identifier = "identifier2")
   }
 
-  dclass <- data.frame(ptmle_group = factor(restraj$data_post[,"class"]), identifier2 = restraj$data_post[,"identifier2"])
+  dclass <- data.frame(pltmle_group = factor(restraj$data_post[,"class"]), identifier2 = restraj$data_post[,"identifier2"])
   dat_final <- merge(dat_sub, dclass, by = "identifier2")
-  mean_adh <- aggregate(as.formula(paste0(treatment_name, "~", "ptmle_group")), FUN = mean, data = dat_final)
+  mean_adh <- aggregate(as.formula(paste0(treatment_name, "~", "pltmle_group")), FUN = mean, data = dat_final)
   ord_adh<- order(-mean_adh[,2])
   ref <- as.character(ord_adh[length(ord_adh)])
   nregimes = 2^ntimes_interval #number of treatment regimes
@@ -129,11 +129,12 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
 
       res_pltmle = pltmle(formula = form, outcome = outcome_up,treatment = treatment_up,
                           covariates = cov_up, baseline = baseline, ntimes_interval = ntimes_interval, number_traj = number_traj,
-                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic, treshold = treshold, class_var = "ptmle_group");
+                          time =  time,identifier = identifier,obsdata = df_l,traj=traj_indic,
+                          treshold = treshold, class_var = "pltmle_group", class_pred = class);
 
       obsdata_pool= data.frame(Y=res_pltmle$counter_means);
       D=res_pltmle$D; #Influence functions
-      obsdata_pool$tmle_group = class
+      obsdata_pool$pltmle_group = class
       obsdata_pool$Interv <- i
 
       list_obsdata_pool[i] <- list(obsdata_pool)
@@ -142,9 +143,9 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
     }
 
     all_obsdata_pool <- data.frame(do.call(rbind, list_obsdata_pool))
-    all_obsdata_pool$tmle_group <- relevel(factor(all_obsdata_pool$tmle_group), ref = ref)
+    all_obsdata_pool$pltmle_group <- relevel(factor(all_obsdata_pool$pltmle_group), ref = ref)
     # Estimation
-    mod = glm(Y ~ factor(tmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
+    mod = glm(Y ~ factor(pltmle_group) + factor(Interv), data =  all_obsdata_pool, family = family);
     coefs = summary(mod)$coefficients[1:number_traj,1];
 
 
