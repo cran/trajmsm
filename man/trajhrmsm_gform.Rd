@@ -45,7 +45,7 @@ trajhrmsm_gform(
 
 \item{identifier}{Name of the column of the unique identifier.}
 
-\item{var_cov}{Names of the time-varying covariates.}
+\item{var_cov}{Names of the time-varying variables.}
 
 \item{number_traj}{Number of trajectory groups.}
 

@@ -41,7 +41,7 @@ trajhrmsm_ipw(
 
 \item{outcome}{Name of the outcome variable.}
 
-\item{var_cov}{Names of the time-varying covariates.}
+\item{var_cov}{Names of the time-varying variables.}
 
 \item{include_censor}{Logical, if TRUE, includes censoring.}
 
@@ -87,7 +87,7 @@ identifier = "id", baseline = baseline_var,
 covariates = covariates, treatment = treatment_var,
 outcome = "y", var_cov= var_cov,include_censor = FALSE,
  ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
-family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
+family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 1)
 reshrmsm_ipw$res_trajhrmsm_ipw
 }
 }

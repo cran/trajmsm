@@ -43,7 +43,7 @@ trajhrmsm_pltmle(
 
 \item{identifier}{Name of the column for unique identifiant.}
 
-\item{var_cov}{Names of the time-varying covariates.}
+\item{var_cov}{Names of the time-varying variables.}
 
 \item{number_traj}{Number of trajectory groups.}
 

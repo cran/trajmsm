@@ -9,7 +9,7 @@
 #' @param covariates Names of the time-varying covariates (should be a list).
 #' @param treatment Name of the time-varying treatment.
 #' @param outcome Name of the outcome variable.
-#' @param var_cov Names of the time-varying covariates.
+#' @param var_cov Names of the time-varying variables.
 #' @param ntimes_interval Length of a time-interval (s).
 #' @param total_followup Total length of follow-up.
 #' @param number_traj Number of trajectory groups.

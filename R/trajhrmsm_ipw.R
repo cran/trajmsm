@@ -9,7 +9,7 @@
 #' @param covariates Names of the time-varying covariates (should be a list).
 #' @param treatment Name of the time-varying treatment.
 #' @param outcome Name of the outcome variable.
-#' @param var_cov Names of the time-varying covariates.
+#' @param var_cov Names of the time-varying variables.
 #' @param ntimes_interval Length of a time-interval (s).
 #' @param total_followup Total length of follow-up.
 #' @param censor Name of the censoring variable.
@@ -43,7 +43,7 @@
 #' covariates = covariates, treatment = treatment_var,
 #' outcome = "y", var_cov= var_cov,include_censor = FALSE,
 #'  ntimes_interval = 6,total_followup = 8, time = "time", time_values = 2011:2018,
-#' family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 0.999)
+#' family = "poisson", number_traj = 3, obsdata = obsdata_long, treshold = 1)
 #' reshrmsm_ipw$res_trajhrmsm_ipw
 #' }
 

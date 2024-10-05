@@ -8,7 +8,7 @@
 #' @param covariates Names of time-varying covariates (should be a list).
 #' @param treatment Name of time-varying treatment.
 #' @param outcome Name of the outcome variable.
-#' @param var_cov Names of the time-varying covariates.
+#' @param var_cov Names of the time-varying variables.
 #' @param ntimes_interval Length of a time-interval (s).
 #' @param total_followup Total length of follow-up.
 #' @param number_traj Number of trajectory groups.
@@ -165,7 +165,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
       CQ = Reduce('+',CQ);
       CQ_list[t] <- list(CQ)
       for(l in 1:nregimes){
-        Db = Db+as.matrix(list_D[[t]][[l]])%*%solve(CQ);
+        Db = Db +as.matrix(list_D[[t]][[l]])%*%solve(CQ);
       }
 
       Db_list[t] <- list(Db)
@@ -178,6 +178,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
     CQ = Reduce('+',CQ);
     CQ_list[3] <- list(CQ)
     Db = matrix(0, nrow = nrow(list_D[[nb_sub]][[1]]), ncol = number_traj);
+
     for(l in 1:nregimes){
       Db = Db+as.matrix(list_D[[nb_sub]][[l]])%*%solve(CQ);
     }
@@ -190,8 +191,8 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
     pairs = combn(nb_sub, 2)
     list_df = Db_list
     #sample nregimes for each dataframe of influences functions
-    n_df <- lapply(list_obsdata, function(x) nrow(na.omit(data.frame(x))))
-
+    n_df = lapply(list_obsdata, function(x) length(unique(data.frame(x)[, identifier])))
+    n  = length(unique(obsdata[,identifier]))
     #variances
 
     var <- lapply(1:nb_sub,function(i){
@@ -215,6 +216,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
       return(vrc)}
     )
 
+
     # minimum sample nregimes per pairs of values
     min_ndf <- lapply(1:ncol(pairs),function(i){
       x = pairs[,i]
@@ -232,7 +234,7 @@ trajhrmsm_pltmle <-  function(degree_traj = c("linear","quadratic","cubic"),
       return(var_temp)}
     )
 
-    se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(Reduce('+',n_df)**2))
+    se = sqrt((Reduce('+',all_cov) + Reduce('+',all_var))/(n)**2)
     pvalue <- 2*pnorm(-abs(coefs)/se)
     #Results
     lo.ci = coefs - 1.96*se ;
