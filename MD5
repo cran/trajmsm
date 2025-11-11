@@ -1,4 +1,4 @@
-57f69fbd89eccf2f92375d75deb7829a *DESCRIPTION
+f12bdcf7ba1668fc1f5ce64de4dd4a57 *DESCRIPTION
 8c979b1068d7656d0540c1d69c89003b *NAMESPACE
 8137d0e6bf34d4a53a1f3b8fe7616b98 *R/build_traj.R
 b7b5e4862fe51313a8728194b9d3f7d1 *R/gendata.R
@@ -14,7 +14,7 @@ c1c244cf302adfd1a07022673f9a9f72 *R/stabilized_iptw.R
 3a5af2da6ece3784d0fc1d56b96df42c *R/trajhrmsm_ipw.R
 f51fbc1bbf1f11d2631880e3060dc1e1 *R/trajhrmsm_pltmle.R
 9f04c3f0d962cf5a149d8412c5aeefd0 *R/trajmsm_gform.R
-8aa9dc91e0ea43cef3b2e0e715f590e2 *R/trajmsm_ipw.R
+b532e27a1731e590e59fa7bcf539b51d *R/trajmsm_ipw.R
 dc4b31adc429164949703e48638f2be0 *R/trajmsm_pltmle.R
 714040eb1c2a151e4dcca639e45075b7 *R/unstabilized_ipcw.R
 c56eb1fd310cbc0798775313473f5f01 *R/unstabilized_iptw.R
